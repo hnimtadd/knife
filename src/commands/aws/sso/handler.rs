@@ -45,7 +45,7 @@ impl LoginArgs {
             p
         } else {
             // Get SSO profiles from ~/.aws/config
-            let profiles = get_sso_profiles()?;
+            let mut profiles = get_sso_profiles()?;
 
             if profiles.is_empty() {
                 output.stderr("No AWS SSO profiles found in ~/.aws/config");
@@ -65,9 +65,9 @@ impl LoginArgs {
                 output.stderr(&format!("failed to setup ctrl_c handler. {e:?}"));
             };
 
+            profiles.sort_by_key(|p| p.name.clone());
             // Interactive selection
-            let mut profile_names: Vec<&str> = profiles.iter().map(|f| f.name.as_str()).collect();
-            profile_names.sort();
+            let profile_names: Vec<&str> = profiles.iter().map(|f| f.name.as_str()).collect();
             let selection = FuzzySelect::new()
                 .with_prompt("Select AWS SSO profile")
                 .items(&profile_names)
